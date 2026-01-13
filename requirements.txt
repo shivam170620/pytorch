@@ -1,0 +1,24 @@
+# Core PyTorch
+torch
+torchvision
+torchaudio
+
+# Numerical computing
+numpy
+scipy
+
+# Data handling
+pandas
+scikit-learn
+
+# Visualization
+matplotlib
+seaborn
+plotly
+
+# Training utilities
+tqdm
+
+# Experiment tracking & visualization
+tensorboard
+
