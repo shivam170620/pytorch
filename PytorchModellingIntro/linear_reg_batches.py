@@ -20,10 +20,7 @@ cars_file = 'https://gist.githubusercontent.com/noamross/e5d3e859aa0c794be10b/ra
 # 3     Hornet 4 Drive  21.4    6  258.0  110  3.08  3.215  19.44   1   0     3     1
 # 4  Hornet Sportabout  18.7    8  360.0  175  3.15  3.440  17.02   0   0     3     2
 df = pd.read_csv(cars_file)
-# print(df.head())
-
-# Generate the plots
-show_plot = False
+show_plot = True
 if show_plot:
     sns.scatterplot(data=df, x="wt", y="mpg")
     sns.regplot(x='wt', y='mpg', data=df)
@@ -52,7 +49,7 @@ output_dim = 1
 model = LinearRgeressionTorch(input_dim, output_dim)
 
 loss = nn.MSELoss()
-lr = 0.001
+lr = 0.02
 epochs = 2000
 optimizer = torch.optim.SGD(params=model.parameters(), lr=lr)
 
@@ -66,14 +63,10 @@ for epoch in range(epochs):
     optimizer.zero_grad()
     # set gradients to zero 
     y_pred = model.forward(X)
-    loss_value = loss(y_pred, y) # loss function cant access items
+    loss_value = loss(y_pred, y)
     loss_value.backward()
-    # loss_value is a scalar which can access .items()
-
-    #update the parameters 
     optimizer.step()
 
-    # get the params weight and bias ..
     for name,param in model.named_parameters():
         print(name, param.data)
         if param.requires_grad:
@@ -90,8 +83,7 @@ for epoch in range(epochs):
 sns.scatterplot(x=range(epochs), y=losses)
 #%% visualise the bias development
 sns.lineplot(x=range(epochs), y=bias)
-# bias is expected to be list as numpy, not a tensor
-#%% visualise the slope development
+#%% 
 sns.lineplot(x=range(epochs), y=slope)
 
 # %% check the result
