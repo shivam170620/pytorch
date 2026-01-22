@@ -21,4 +21,5 @@ tqdm
 
 # Experiment tracking & visualization
 tensorboard
+skorch
 
