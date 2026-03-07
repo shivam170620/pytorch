@@ -52,7 +52,7 @@ output_dim = 1
 model = LinearRgeressionTorch(input_dim, output_dim)
 
 loss = nn.MSELoss()
-lr = 0.001
+lr = 0.02
 epochs = 2000
 optimizer = torch.optim.SGD(params=model.parameters(), lr=lr)
 

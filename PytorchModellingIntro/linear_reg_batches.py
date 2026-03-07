@@ -52,6 +52,11 @@ loss = nn.MSELoss()
 lr = 0.02
 epochs = 2000
 optimizer = torch.optim.SGD(params=model.parameters(), lr=lr)
+BATCH_SIZE = 2 # This params creates say K no. inputs of size BATCH SIZE,
+# This leads passing not whole big dataset at once instead which train in Batch size 
+# Such that computation becomes efficient
+
+## Now for every itertaion we have to run through each batches...
 
 #%%
 
@@ -60,31 +65,35 @@ slope=[]
 bias = []
 losses=[]
 for epoch in range(epochs):
-    optimizer.zero_grad()
-    # set gradients to zero 
-    y_pred = model.forward(X)
-    loss_value = loss(y_pred, y)
-    loss_value.backward()
-    optimizer.step()
+    for i in range(0 , len(X_list), BATCH_SIZE):
+        optimizer.zero_grad()
+        # set gradients to zero 
+        y_pred = model.forward(X[i : i+BATCH_SIZE])
+        loss_value = loss(y_pred, y[i : i+BATCH_SIZE])
+        loss_value.backward()
+        optimizer.step()
 
-    for name,param in model.named_parameters():
-        print(name, param.data)
-        if param.requires_grad:
-            if name == 'linear.weight':
-                slope.append(param.data.numpy()[0][0])
-            if name == 'linear.bias':
-                bias.append(param.data.numpy()[0])
+        for name,param in model.named_parameters():
+            print(name, param.data)
+            if param.requires_grad:
+                if name == 'linear.weight':
+                    slope.append(param.data.numpy()[0][0])
+                if name == 'linear.bias':
+                    bias.append(param.data.numpy()[0])
 
-    losses.append(loss_value.item())
-    if (epoch % 100 == 0):
-        print(f"Epoch {epoch}, Loss: {loss_value.item()}")
+        losses.append(loss_value.item())
+        if (epoch % 100 == 0):
+            print(f"Epoch {epoch}, Loss: {loss_value.item()}")
 
 #%%
-sns.scatterplot(x=range(epochs), y=losses)
+print(len(losses), len(bias), len(slope))
+
+#%%
+sns.scatterplot(x=range(len(losses)), y=losses)
 #%% visualise the bias development
-sns.lineplot(x=range(epochs), y=bias)
+sns.lineplot(x=range(len(bias)), y=bias)
 #%% 
-sns.lineplot(x=range(epochs), y=slope)
+sns.lineplot(x=range(len(slope)), y=slope)
 
 # %% check the result
 y_pred = model(X).data.numpy().reshape(-1)
