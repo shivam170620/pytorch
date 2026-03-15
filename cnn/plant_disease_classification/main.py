@@ -189,10 +189,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import accuracy_score, confusion_matrix
 # %%
+mean_rgb = [0.47171182, 0.58919345, 0.39722319]
+std_rgb= [0.17471065, 0.15711372 , 0.18001845]
 train_transform = transforms.Compose([
     transforms.Resize(256),
     transforms.CenterCrop(224),
-    transforms.RandomHorizontalFlip(10),
+    transforms.RandomHorizontalFlip(p=0.5),
     transforms.ToTensor(),
     transforms.Normalize(mean_rgb , std_rgb)
 ])
@@ -241,5 +243,69 @@ class PlantDiseaseClassificationNN(nn.Module):
     def __init__(self, num_classes):
         super().__init__()
 
+        self.conv1 = nn.Conv2d(in_channels=3, out_channels=6, kernel_size=3)
+        self.conv2 = nn.Conv2d(6, 16, 3)
+        self.conv3 = nn.Conv2d(16, 42, 3)
+        self.relu = nn.ReLU()
+        self.softmax = nn.Softmax()
+        self.flatten = nn.Flatten()
+        self.maxpool = nn.MaxPool2d(2, 2)
+        self.linear1 = nn.Linear(42*26*26, 128)
+        self.linear2 = nn.Linear(128, 64)
+        self.linear3 = nn.Linear(64, num_classes)
+
     def forward(self, x):
-        ""
+        x=self.conv1(x)
+        x=self.maxpool(x)
+        x=self.relu(x)
+        x=self.conv2(x)
+        x=self.maxpool(x)
+        x=self.relu(x)
+        x=self.conv3(x)
+        x=self.maxpool(x)
+        x=self.relu(x)
+        x=self.flatten(x)
+        x=self.linear1(x)
+        x=self.relu(x)
+        x=self.linear2(x)
+        x=self.relu(x)
+        x=self.linear3(x)
+        # x=self.relu(x)
+        # self.softmax(x)
+
+        return x
+# %%
+epochs = 5
+model = PlantDiseaseClassificationNN(num_classes)
+loss_fn = nn.CrossEntropyLoss() # use softmax internally cross ebtropy loss 
+lr = 0.001
+optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+
+# %%
+for epoch in range(epochs):
+    for idx, data in enumerate(train_loader):
+        x_, y_ = data
+        optimizer.zero_grad()
+        y_pred = model(x_)
+        loss = loss_fn(y_pred, y_)
+        loss.backward()
+        optimizer.step()
+
+    print(f'Epoch {epoch}/{epochs}, Loss: {loss.item():.4f}')
+# %%
+y_test = []
+y_test_hat = []
+for i, data in enumerate(test_loader, 0):
+    inputs, y_test_temp = data
+    with torch.no_grad():
+        y_test_hat_temp = torch.argmax(model(inputs), dim=1)
+    
+    y_test.extend(y_test_temp.numpy())
+    y_test_hat.extend(y_test_hat_temp.numpy())
+
+# %%
+acc = accuracy_score(y_test_hat, y_test)
+print(f'Accuracy: {acc*100:.2f} %')
+# %% confusion matrix
+confusion_matrix(y_test_hat, y_test)
+# %%
