@@ -189,8 +189,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.metrics import accuracy_score, confusion_matrix
 # %%
-mean_rgb = [0.47171182, 0.58919345, 0.39722319]
-std_rgb= [0.17471065, 0.15711372 , 0.18001845]
+# mean_rgb = [0.47171182, 0.58919345, 0.39722319]
+# std_rgb= [0.17471065, 0.15711372 , 0.18001845]
 train_transform = transforms.Compose([
     transforms.Resize(256),
     transforms.CenterCrop(224),
