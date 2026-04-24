@@ -87,3 +87,37 @@ class ImageClassificationNN(nn.Module):
         x = self.Linear3(x)
         x = self.Sigmoid(x)
         return x
+# %%
+model = ImageClassificationNN()
+print(model)
+# %%
+loss_function = nn.BCELoss() # Binary Cross Entropy Loss
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+epochs = 10
+losses=[]
+# %%
+for epoch in range(epochs):
+    for i, data in enumerate(train_loader):
+        inputs, labels = data
+        optimizer.zero_grad()
+        # if labels are in shape of [5,] we need to reshape it to [5, 1] for the loss function from [0,1,0,1,0] to [[0],[1],[0],[1],[0]]
+        outputs = model(inputs)
+        loss = loss_function(outputs, labels.reshape(-1, 1).float())
+        loss.backward()
+        optimizer.step()
+    losses.append(loss.item())
+    print(f'Epoch {epoch+1}/{epochs}, Loss: {loss.item():.4f}')
+# %%
+y_test=[]
+y_test_hat=[]
+
+for i, data in enumerate(test_loader, 0):
+    inputs, labels = data
+    with torch.no_grad():
+        y_test_hat_temp = model(inputs).round()
+    y_test_hat.extend(y_test_hat_temp.numpy())
+    y_test.extend(labels.numpy())
+
+acc=accuracy_score(y_test, y_test_hat)
+print(f'Accuracy: {acc*100:.2f} %')
+# %%
